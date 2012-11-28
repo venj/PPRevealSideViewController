@@ -1255,6 +1255,11 @@
             
             if (PPSystemVersionGreaterOrEqualThan(5.0)) [c didMoveToParentViewController:self];
         }
+        if ([UIApplication sharedApplication].statusBarHidden == NO
+            && (_currentPanDirection == PPRevealSideDirectionLeft || _currentPanDirection == PPRevealSideDirectionRight)
+            && c.view.frame.origin.y == 0) {
+            c.view.frame = CGRectMake(0., 20., c.view.frame.size.width, c.view.frame.size.height - 20.);
+        }
         c.view.hidden = NO;
     }
     else // we use the bounce animation
