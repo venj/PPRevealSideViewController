@@ -1190,7 +1190,7 @@
 }
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    return NO;
+    return YES;
 }
 
 #define OFFSET_TRIGGER_CHOSE_DIRECTION 3.0
