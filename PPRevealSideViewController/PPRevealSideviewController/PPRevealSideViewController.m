@@ -79,6 +79,11 @@
         _gestures = [[NSMutableArray alloc] init];
         
         [self setRootViewController:rootViewController];
+        _overlayView = [[UIView alloc] initWithFrame:CGRectZero];
+        _overlayView.backgroundColor = [UIColor clearColor];
+        _overlayParentView = self.view;
+        [_overlayParentView addSubview:_overlayView];
+        [_overlayParentView sendSubviewToBack:_overlayView];
     }
     return self;
 }
@@ -364,7 +369,9 @@
                                  if (PPSystemVersionGreaterOrEqualThan(5.0)) [controller didMoveToParentViewController:self];
                                  [self informDelegateWithOptionalSelector:@selector(pprevealSideViewController:didPushController:) withParam:controller];
                              }
-                             
+                             // overlay the view ontop of rootViewController when animation finished.
+                             _overlayView.frame = _rootViewController.view.frame;
+                             [_overlayParentView bringSubviewToFront:_overlayView];
                          }];
     }
     else {
@@ -385,6 +392,7 @@
 }
 
 - (void) popViewControllerAnimated:(BOOL)animated {
+    [_overlayParentView sendSubviewToBack:_overlayView];
     [self popViewControllerWithNewCenterController:_rootViewController
                                           animated:animated];
 }
@@ -937,6 +945,8 @@
 - (void) addGesturesToCenterController 
 {
     [self addGesturesToController:[self getControllerForGestures]];
+    [self addPanGestureToView:_overlayView];
+    [self addTapGestureToView:_overlayView];
 }
 
 - (void) removeAllPanGestures {
@@ -1162,6 +1172,22 @@
 
 #pragma mark - Gesture recognizer
 
+- (BOOL)isHorizontalPanGesture:(UIPanGestureRecognizer *)gestureRecognizer {
+    CGPoint translation = [gestureRecognizer translationInView:self.view];
+    if ([gestureRecognizer velocityInView:self.view].x < 700 && sqrt(translation.x * translation.x) / sqrt(translation.y * translation.y) > 1) {
+        return YES;
+    }
+    return NO;
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
+        UIPanGestureRecognizer *panGesture = (UIPanGestureRecognizer*)gestureRecognizer;
+        return [self isHorizontalPanGesture:panGesture];
+    }
+    return YES;
+}
+
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
     _panOrigin = _rootViewController.view.frame.origin;
     gestureRecognizer.enabled = YES;
@@ -1190,7 +1216,10 @@
 }
 
 - (BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    return YES;
+    if ([gestureRecognizer isKindOfClass:[UITapGestureRecognizer class]]) {
+        return YES;
+    }
+    return NO;
 }
 
 #define OFFSET_TRIGGER_CHOSE_DIRECTION 3.0
