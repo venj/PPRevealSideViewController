@@ -1286,7 +1286,8 @@
         }
         if ([UIApplication sharedApplication].statusBarHidden == NO
             && (_currentPanDirection == PPRevealSideDirectionLeft || _currentPanDirection == PPRevealSideDirectionRight)
-            && c.view.frame.origin.y == 0) {
+            && c.view.frame.origin.y == 0
+            && ![c isKindOfClass:[UINavigationController class]]) {
             c.view.frame = CGRectMake(0., 20., c.view.frame.size.width, c.view.frame.size.height - 20.);
         }
         c.view.hidden = NO;
